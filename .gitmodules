@@ -1,0 +1,3 @@
+[submodule "submodules/surya"]
+	path = submodules/surya
+	url = git@github.com:mathematiguy/surya.git
