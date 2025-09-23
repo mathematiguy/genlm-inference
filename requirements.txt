@@ -1,3 +1,12 @@
+dvc
 ipython
 jupyter
 jupyterlab
+pandas
+torch
+
+# Install genlm
+vllm
+triton
+genlm-backend==v0.1.5
+genlm-control==v0.2.11

@@ -1,18 +1,29 @@
 REPO_NAME := $(shell basename `git rev-parse --show-toplevel` | tr '[:upper:]' '[:lower:]')
 DOCKER_REGISTRY := mathematiguy
-IMAGE := ${REPO_NAME}.sif
-RUN ?= singularity exec ${FLAGS} --nv ${IMAGE}
-FLAGS ?=  -B $$(pwd):/code --pwd /code
+IMAGE := container.sif
+RUN ?= singularity exec ${FLAGS} ${IMAGE}
+FLAGS ?= --nv  -B $$(pwd):/code --pwd /code
 SINGULARITY_ARGS ?=
 
 .PHONY: sandbox container shell root-shell docker docker-push docker-pull enter enter-root
 
-jupyter:
-	${RUN} jupyter lab --ip 0.0.0.0 --port=8888 --NotebookApp.password=$(shell singularity exec ${IMAGE} python -c "from notebook.auth import passwd; print(passwd('jupyter', 'sha1'))")
+JUPYTER_PORT := 8000
+jupyter: $(IMAGE)
+	singularity exec $(FLAGS) container.sif jupyter lab \
+		--ip=0.0.0.0 \
+		--no-browser \
+		--port $(JUPYTER_PORT) \
+		--allow-root \
+		--notebook-dir=/code
 
-REMOTE ?= cn-f001
+# Use this command to send the singularity container to a running remote session on the cluster
+push: USER_NAME=caleb.moses
+push: SERVER=cn-f001
+push: OBJECT=$(IMAGE)
+push: REMOTE=$(USER_NAME)@$(SERVER).server.mila.quebec
+push: DEST=${REPO_NAME}/
 push:
-	rsync -rvahzP ${IMAGE} ${REMOTE}.server.mila.quebec:${SCRATCH}
+	rsync -ahP $(OBJECT) $(REMOTE):$(DEST)
 
 ${REPO_NAME}_sandbox:
 	singularity build --sandbox ${REPO_NAME}_sandbox ${IMAGE}
@@ -21,7 +32,7 @@ sandbox: ${REPO_NAME}_sandbox
 	sudo singularity shell --writable ${REPO_NAME}_sandbox
 
 container: ${IMAGE}
-${IMAGE}:
+${IMAGE}: Singularity requirements.txt
 	sudo singularity build ${IMAGE} ${SINGULARITY_ARGS} Singularity
 
 shell:
