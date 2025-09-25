@@ -1,19 +1,5 @@
 REPO_NAME := $(shell basename `git rev-parse --show-toplevel` | tr '[:upper:]' '[:lower:]')
 DOCKER_REGISTRY := mathematiguy
-<<<<<<< Updated upstream
-IMAGE := container.sif
-RUN ?= singularity exec ${FLAGS} ${IMAGE}
-FLAGS ?= --nv  -B $$(pwd):/code --pwd /code
-SINGULARITY_ARGS ?=
-
-.PHONY: sandbox container shell root-shell docker docker-push docker-pull enter enter-root
-
-JUPYTER_PORT := 8000
-jupyter: $(IMAGE)
-	singularity exec $(FLAGS) container.sif jupyter lab \
-		--ip=0.0.0.0 \
-		--no-browser \
-=======
 IMAGE := $(DOCKER_REGISTRY)/$(REPO_NAME)
 HAS_DOCKER ?= $(shell which docker)
 RUN ?= $(if $(HAS_DOCKER), docker run $(DOCKER_ARGS) --rm -v $$(pwd):/home/kaimahi/$(REPO_NAME) -w /home/kaimahi/$(REPO_NAME) -u $(UID):$(GID) $(IMAGE))
@@ -31,7 +17,6 @@ JUPYTER_PORT ?= 8888
 jupyter: DOCKER_ARGS=-u $(UID):$(GID) --rm -it -p $(JUPYTER_PORT):$(JUPYTER_PORT) -e NB_USER=$$USER -e NB_UID=$(UID) -e NB_GID=$(GID)
 jupyter:
 	$(RUN) jupyter lab \
->>>>>>> Stashed changes
 		--port $(JUPYTER_PORT) \
 		--allow-root \
 		--notebook-dir=/code
